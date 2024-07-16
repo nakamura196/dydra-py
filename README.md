@@ -13,7 +13,13 @@ pip install git+https://github.com/nakamura196/dydra-py
 
 ## How to use
 
-See the documentation for full details of the Dydra Client.
+[See the documentation](https://nakamura196.github.io/dydra-py/api.html)
+for full details of the Dydra Client.
+
+``` txt:.env
+DYDRA_ENDPOINT=https://dydra.com/ut-digital-archives/db/sparql
+DYDRA_API_KEY=xxxxxx
+```
 
 ``` python
 endpoint, api_key = DydraClient.load_env("../.env")
@@ -30,8 +36,6 @@ import data from a file
 ``` python
 client.import_by_file("./data.rdf", "xml")
 ```
-
-    Data successfully inserted.
 
 search by SPARQL query
 
