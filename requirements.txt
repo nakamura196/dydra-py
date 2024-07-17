@@ -3,3 +3,4 @@ rdflib
 SPARQLWrapper
 nbdev
 python-dotenv
+tqdm

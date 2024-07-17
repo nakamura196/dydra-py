@@ -4,14 +4,7 @@
          xmlns:foaf="http://xmlns.com/foaf/0.1/">
 
   <rdf:Description rdf:about="http://example.org/BOB">
-    <ns0:knows rdf:resource="http://example.org/Alice"/>
-    <ns0:type rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
     <foaf:topic_interest rdf:resource="https://jpsearch.go.jp/entity/chname/葛飾北斎"/>
-  </rdf:Description>
-
-  <rdf:Description rdf:about="http://example.org/Alice">
-    <ns0:knows rdf:resource="http://example.org/BOB"/>
-    <ns0:type rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
   </rdf:Description>
 
 </rdf:RDF>

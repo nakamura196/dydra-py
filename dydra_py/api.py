@@ -9,6 +9,10 @@ import rdflib
 from dotenv import load_dotenv
 import os
 from SPARQLWrapper import SPARQLWrapper, JSON
+import shutil
+from tqdm import tqdm
+import tempfile
+from rdflib import Graph
 
 # %% ../nbs/api.ipynb 4
 class DydraClient():    
@@ -48,7 +52,7 @@ class DydraClient():
         self.endpoint = endpoint
         self.api_key = api_key
 
-    def import_by_file(self, file_path, format, graph_uri=None):
+    def import_by_file(self, file_path, format, graph_uri=None, verbose=False):
         """
         Imports RDF data from a file into the Dydra store.
 
@@ -63,35 +67,95 @@ class DydraClient():
             "Content-Type": "application/sparql-update"
         }
 
-        # RDFファイルの読み込み
-        graph = rdflib.Graph()
-        graph.parse(file_path, format=format)  # フォーマットはファイルに応じて変更
+        files = self._chunk_rdf_file(file_path, format=format)
 
-        nt_data = graph.serialize(format='nt')
+        print("Number of chunks: ", len(files))
 
-        if graph_uri is None:
-            query = f"""
-            INSERT DATA {{
-            {nt_data}
-            }}
-            """
+        for file in tqdm(files):
 
-        else:
-            query = f"""
-            INSERT DATA {{
-            GRAPH <{graph_uri}> {{
+            # RDFファイルの読み込み
+            graph = rdflib.Graph()
+            graph.parse(file, format=format)  # フォーマットはファイルに応じて変更
+
+            nt_data = graph.serialize(format='nt')
+
+            if graph_uri is None:
+                query = f"""
+                INSERT DATA {{
                 {nt_data}
-            }}
-            }}
-            """
+                }}
+                """
 
-        
+            else:
+                query = f"""
+                INSERT DATA {{
+                GRAPH <{graph_uri}> {{
+                    {nt_data}
+                }}
+                }}
+                """
 
-        response = requests.post(self.endpoint, data=query, headers=headers)
-        if response.status_code == 200:
-            print("Data successfully inserted.")
-        else:
-            print(f"Error: {response.status_code} {response.text}")
+            if verbose:
+                print(query)
+
+            response = requests.post(self.endpoint, data=query, headers=headers)
+            if response.status_code == 200:
+                print("Data successfully inserted.")
+            else:
+                print(f"Error: {response.status_code} {response.text}")
+
+    def delete_by_file(self, file_path, format, graph_uri=None, verbose=False):
+        """
+        Deletes RDF data from a file in the Dydra store.
+
+        Args:
+            file_path (str): The path to the RDF file to delete.
+            format (str): The format of the RDF file (e.g., 'xml', 'nt').
+            graph_uri (str, optional): URI of the graph where data will be deleted. Defaults to None.
+        """
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/sparql-update"
+        }
+
+        files = self._chunk_rdf_file(file_path, format=format)
+
+        print("Number of chunks: ", len(files))
+
+        for file in tqdm(files):
+
+            # RDFファイルの読み込み
+            graph = rdflib.Graph()
+            graph.parse(file, format=format)  # フォーマットはファイルに応じて変更
+
+            nt_data = graph.serialize(format='nt')
+
+            if graph_uri is None:
+                query = f"""
+                DELETE DATA {{
+                {nt_data}
+                }}
+                """
+
+            else:
+
+                query = f"""
+                DELETE DATA {{
+                GRAPH <{graph_uri}> {{
+                    {nt_data}
+                }}
+                }}
+                """
+
+            if verbose:
+                print(query)
+
+            response = requests.post(self.endpoint, data=query, headers=headers)
+            if response.status_code == 200:
+                print("Data successfully deleted.")
+            else:
+                print(f"Error: {response.status_code} {response.text}")
 
     def query(self, query):
         """
@@ -158,4 +222,160 @@ class DydraClient():
             print("Data successfully cleared.")
         else:
             print(f"Error: {response.status_code} {response.text}")
+
+    def _serialize_chunk(self, graph, index, format='turtle'):
+        output_dir = self.output_dir
+        """チャンクをファイルにシリアライズする補助関数"""
+        filename = f"{output_dir}/output_chunk_{index}.{format}"
+        os.makedirs(output_dir, exist_ok=True)
+        graph.serialize(filename, format=format)
+        # print(f"Saved {filename}, size: {os.path.getsize(filename)} bytes")
+
+        return filename
+
+    def _clear_output_dir(self, output_dir):
+        shutil.rmtree(output_dir, ignore_errors=True)
+
+    def _chunk_rdf_file(self, input_file, output_dir=None, chunk_size=500*1024, format='turtle'):
+        if output_dir is None:
+            output_dir = tempfile.mkdtemp()
+
+        self.output_dir = output_dir
+
+        self._clear_output_dir(output_dir)
+
+        """RDF ファイルを指定されたサイズのチャンクに分割する"""
+        g = Graph()
+        g.parse(input_file, format=format)
+
+        current_chunk = Graph()
+        current_size = 0
+        chunk_index = 1
+
+        count = 0
+
+        files = []
+
+        print("Triple count: ", len(g))
+
+        for s, p, o in tqdm(g):
+            count += 1
+
+            # 一時的なグラフにトリプルを追加
+            current_chunk.add((s, p, o))
+
+            if count % 1000 == 0:
+
+                # シリアライズしてサイズを確認
+                temp_serialized = current_chunk.serialize(format=format)
+                temp_size = len(temp_serialized)
+
+                # 現在のチャンクサイズが設定値を超えたらシリアライズしてファイルに保存
+                if temp_size >= chunk_size:
+                    path = self._serialize_chunk(current_chunk, chunk_index, format=format)
+                    files.append(path)
+                    current_chunk = Graph()  # 新しいグラフを開始
+                    chunk_index += 1
+
+        # 最後のチャンクを保存
+        if len(current_chunk) > 0:
+            path = self._serialize_chunk(current_chunk, chunk_index, format=format)
+            files.append(path)
+
+        return files
+
+    def delete_by_subjects(self, subject_uris, graph_uri=None, verbose=False):
+        """
+        Deletes RDF data from the Dydra store based on a list of subject URIs.
+
+        Args:
+            subject_uris (list): List of subject URIs to delete.
+        """
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/sparql-update"
+        }
+
+        # Function to chunk URIs into batches
+        def _chunked_uris(uris, chunk_size):
+            for i in range(0, len(uris), chunk_size):
+                yield uris[i:i + chunk_size]
+
+        # Iterate over URI chunks
+        for uri_chunk in tqdm(_chunked_uris(subject_uris, 100)):
+            if graph_uri is None:
+                query = f"""
+                DELETE {{
+                    ?uri ?p ?o
+                }}
+                WHERE {{
+                    VALUES ?uri {{ {' '.join(f'<{uri}>' for uri in uri_chunk)} }}
+                    ?uri ?p ?o
+                }}
+                """
+            else:
+                query = f"""
+                DELETE {{
+                    GRAPH <{graph_uri}> {{
+                        ?uri ?p ?o
+                    }}
+                }}
+                WHERE {{
+                    GRAPH <{graph_uri}> {{
+                        VALUES ?uri {{ {' '.join(f'<{uri}>' for uri in uri_chunk)} }}
+                        ?uri ?p ?o
+                    }}
+                }}
+                """
+
+            if verbose:
+                # print(query)
+                pass
+
+            response = requests.post(self.endpoint, data=query, headers=headers)
+            if response.status_code == 200:
+                if verbose:
+                    print(f"Data for URIs successfully deleted.")
+            else:
+                print(f"Error: {response.status_code} {response.text}")
+
+        '''
+        for uri in tqdm(subject_uris):
+
+            if graph_uri is None:
+
+                query = f"""
+            DELETE {{
+            <{uri}> ?p ?o
+            }}
+            WHERE {{
+            <{uri}> ?p ?o
+            }}
+            """
+                
+            else:
+                query = f"""
+            DELETE {{
+            GRAPH <{graph_uri}> {{
+                <{uri}> ?p ?o
+            }}
+            }}
+            WHERE {{
+            GRAPH <{graph_uri}> {{
+                <{uri}> ?p ?o
+            }}
+            }}
+            """
+                
+            if verbose:
+                print(query)
+
+            response = requests.post(self.endpoint, data=query, headers=headers)
+            if response.status_code == 200:
+                # print(f"Data for {uri} successfully deleted.")
+                pass
+            else:
+                print(f"Error: {response.status_code} {response.text}")
+        '''
 
