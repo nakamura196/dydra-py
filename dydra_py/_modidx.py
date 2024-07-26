@@ -15,10 +15,4 @@ d = { 'settings': { 'branch': 'main',
                               'dydra_py.api.DydraClient.delete_by_subjects': ('api.html#dydraclient.delete_by_subjects', 'dydra_py/api.py'),
                               'dydra_py.api.DydraClient.import_by_file': ('api.html#dydraclient.import_by_file', 'dydra_py/api.py'),
                               'dydra_py.api.DydraClient.load_env': ('api.html#dydraclient.load_env', 'dydra_py/api.py'),
-                              'dydra_py.api.DydraClient.query': ('api.html#dydraclient.query', 'dydra_py/api.py')},
-            'dydra_py.core': { 'dydra_py.core.DydraClient': ('core.html#dydraclient', 'dydra_py/core.py'),
-                               'dydra_py.core.DydraClient.__init__': ('core.html#dydraclient.__init__', 'dydra_py/core.py'),
-                               'dydra_py.core.DydraClient.clear': ('core.html#dydraclient.clear', 'dydra_py/core.py'),
-                               'dydra_py.core.DydraClient.import_by_file': ('core.html#dydraclient.import_by_file', 'dydra_py/core.py'),
-                               'dydra_py.core.DydraClient.load_env': ('core.html#dydraclient.load_env', 'dydra_py/core.py'),
-                               'dydra_py.core.DydraClient.query': ('core.html#dydraclient.query', 'dydra_py/core.py')}}}
+                              'dydra_py.api.DydraClient.query': ('api.html#dydraclient.query', 'dydra_py/api.py')}}}
