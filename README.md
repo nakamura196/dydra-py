@@ -37,6 +37,42 @@ import data from a file
 client.import_by_file("./data.rdf", "xml")
 ```
 
+    Triple count:  5
+
+    100%|██████████| 5/5 [00:00<00:00, 34952.53it/s]
+
+    Number of chunks:  1
+
+    100%|██████████| 1/1 [00:01<00:00,  1.65s/it]
+
+    Data successfully inserted.
+
+delete data from a file
+
+``` python
+client.delete_by_file("./data_delete.rdf", "xml")
+```
+
+    Triple count:  1
+
+    100%|██████████| 1/1 [00:00<00:00, 12865.96it/s]
+
+    Number of chunks:  1
+
+    100%|██████████| 1/1 [00:01<00:00,  1.22s/it]
+
+    Data successfully deleted.
+
+delete data by subjects
+
+``` python
+client.delete_by_subjects(["http://example.org/BOB"], verbose=True)
+```
+
+    1it [00:01,  1.12s/it]
+
+    Data for URIs successfully deleted.
+
 search by SPARQL query
 
 ``` python
@@ -53,16 +89,12 @@ df
 
     {'head': {'vars': ['s', 'v', 'o']},
      'results': {'bindings': [{'s': {'type': 'uri',
-         'value': 'http://example.org/BOB'},
-        'v': {'type': 'uri', 'value': 'http://xmlns.com/foaf/0.1/topic_interest'},
-        'o': {'type': 'uri',
-         'value': 'https://jpsearch.go.jp/entity/chname/葛飾北斎'}},
-       {'s': {'type': 'uri', 'value': 'http://example.org/BOB'},
+         'value': 'http://example.org/Alice'},
         'v': {'type': 'uri', 'value': 'http://example.org/type'},
         'o': {'type': 'uri', 'value': 'http://xmlns.com/foaf/0.1/Person'}},
-       {'s': {'type': 'uri', 'value': 'http://example.org/BOB'},
+       {'s': {'type': 'uri', 'value': 'http://example.org/Alice'},
         'v': {'type': 'uri', 'value': 'http://example.org/knows'},
-        'o': {'type': 'uri', 'value': 'http://example.org/Alice'}}]}}
+        'o': {'type': 'uri', 'value': 'http://example.org/BOB'}}]}}
 
 clear the graph
 
@@ -84,6 +116,14 @@ import data from a file
 client.import_by_file("./data.rdf", "xml", graph_uri=graph_uri)
 ```
 
+    Triple count:  5
+
+    100%|██████████| 5/5 [00:00<00:00, 43509.38it/s]
+
+    Number of chunks:  1
+
+    100%|██████████| 1/1 [00:00<00:00,  1.05it/s]
+
     Data successfully inserted.
 
 search by SPARQL query
@@ -103,6 +143,14 @@ df
     {'head': {'vars': ['g', 's', 'v', 'o']},
      'results': {'bindings': [{'g': {'type': 'uri',
          'value': 'http://example.org/graph'},
+        's': {'type': 'uri', 'value': 'http://example.org/Alice'},
+        'v': {'type': 'uri', 'value': 'http://example.org/type'},
+        'o': {'type': 'uri', 'value': 'http://xmlns.com/foaf/0.1/Person'}},
+       {'g': {'type': 'uri', 'value': 'http://example.org/graph'},
+        's': {'type': 'uri', 'value': 'http://example.org/Alice'},
+        'v': {'type': 'uri', 'value': 'http://example.org/knows'},
+        'o': {'type': 'uri', 'value': 'http://example.org/BOB'}},
+       {'g': {'type': 'uri', 'value': 'http://example.org/graph'},
         's': {'type': 'uri', 'value': 'http://example.org/BOB'},
         'v': {'type': 'uri', 'value': 'http://xmlns.com/foaf/0.1/topic_interest'},
         'o': {'type': 'uri',
