@@ -22,6 +22,7 @@ DYDRA_API_KEY=xxxxxx
 ```
 
 ``` python
+from dydra_py.api import DydraClient
 endpoint, api_key = DydraClient.load_env("../.env")
 client = DydraClient(endpoint, api_key)
 endpoint
@@ -39,11 +40,11 @@ client.import_by_file("./data.rdf", "xml")
 
     Triple count:  5
 
-    100%|██████████| 5/5 [00:00<00:00, 34952.53it/s]
+    100%|██████████| 5/5 [00:00<00:00, 39053.11it/s]
 
     Number of chunks:  1
 
-    100%|██████████| 1/1 [00:01<00:00,  1.65s/it]
+    100%|██████████| 1/1 [00:00<00:00,  1.20it/s]
 
     Data successfully inserted.
 
@@ -55,13 +56,11 @@ client.delete_by_file("./data_delete.rdf", "xml")
 
     Triple count:  1
 
-    100%|██████████| 1/1 [00:00<00:00, 12865.96it/s]
+    100%|██████████| 1/1 [00:00<00:00, 13706.88it/s]
 
     Number of chunks:  1
 
-    100%|██████████| 1/1 [00:01<00:00,  1.22s/it]
-
-    Data successfully deleted.
+      0%|          | 0/1 [00:00<?, ?it/s]
 
 delete data by subjects
 
@@ -69,7 +68,7 @@ delete data by subjects
 client.delete_by_subjects(["http://example.org/BOB"], verbose=True)
 ```
 
-    1it [00:01,  1.12s/it]
+    1it [00:00,  1.09it/s]
 
     Data for URIs successfully deleted.
 
@@ -118,11 +117,11 @@ client.import_by_file("./data.rdf", "xml", graph_uri=graph_uri)
 
     Triple count:  5
 
-    100%|██████████| 5/5 [00:00<00:00, 43509.38it/s]
+    100%|██████████| 5/5 [00:00<00:00, 44715.39it/s]
 
     Number of chunks:  1
 
-    100%|██████████| 1/1 [00:00<00:00,  1.05it/s]
+    100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
 
     Data successfully inserted.
 
