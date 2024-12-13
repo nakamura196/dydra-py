@@ -1,0 +1,42 @@
+[
+  {
+    "objectID": "api.html",
+    "href": "api.html",
+    "title": "Dydra API client",
+    "section": "",
+    "text": "source\n\nDydraClient\n\n DydraClient (endpoint, api_key)\n\n*A client for interacting with a Dydra SPARQL endpoint.\nAttributes: endpoint (str): The SPARQL endpoint URL. api_key (str): The API key for authorization.*\n\nsource\n\n\nDydraClient.import_by_file\n\n DydraClient.import_by_file (file_path, format, graph_uri=None,\n                             verbose=False, chunk_size=512000)\n\n*Imports RDF data from a file into the Dydra store.\nArgs: file_path (str): The path to the RDF file to import. format (str): The format of the RDF file (e.g., ‘xml’, ‘nt’). graph_uri (str, optional): URI of the graph where data will be inserted. Defaults to None. verbose (bool, optional): Whether to print the SPARQL query. Defaults to False. chunk_size (int, optional): The chunk size for splitting the RDF file. Defaults to 5001024.\n\nsource\n\n\nDydraClient.delete_by_file\n\n DydraClient.delete_by_file (file_path, format, graph_uri=None,\n                             verbose=False)\n\n*Deletes RDF data from a file in the Dydra store.\nArgs: file_path (str): The path to the RDF file to delete. format (str): The format of the RDF file (e.g., ‘xml’, ‘nt’). graph_uri (str, optional): URI of the graph where data will be deleted. Defaults to None.*\n\nsource\n\n\nDydraClient.delete_by_subjects\n\n DydraClient.delete_by_subjects (subject_uris, graph_uri=None,\n                                 verbose=False)\n\n*Deletes RDF data from the Dydra store based on a list of subject URIs.\nArgs: subject_uris (list): List of subject URIs to delete.*\n\nsource\n\n\nDydraClient.query\n\n DydraClient.query (query)\n\n*Executes a SPARQL query against the endpoint and returns the results.\nArgs: query (str): The SPARQL query to execute.\nReturns: dict: The query results in JSON format.*\n\nsource\n\n\nDydraClient.clear\n\n DydraClient.clear (graph_uri=None)\n\n*Clears all data from the default or specified graph.\nArgs: graph_uri (str, optional): URI of the graph to clear. Defaults to None.*",
+    "crumbs": [
+      "Dydra API client"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "dydra-py",
+    "section": "",
+    "text": "Tools for working with Dydra.com’s SPARQL endpoint.",
+    "crumbs": [
+      "dydra-py"
+    ]
+  },
+  {
+    "objectID": "index.html#install",
+    "href": "index.html#install",
+    "title": "dydra-py",
+    "section": "Install",
+    "text": "Install\npip install git+https://github.com/nakamura196/dydra-py",
+    "crumbs": [
+      "dydra-py"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "dydra-py",
+    "section": "How to use",
+    "text": "How to use\nSee the documentation for full details of the Dydra Client.\nDYDRA_ENDPOINT=https://dydra.com/ut-digital-archives/db/sparql\nDYDRA_API_KEY=xxxxxx\n\nfrom dydra_py.api import DydraClient\nendpoint, api_key = DydraClient.load_env(\"../.env\")\nclient = DydraClient(endpoint, api_key)\nendpoint\n\n'https://dydra.com/ut-digital-archives/db/sparql'\n\n\n\nWithout graph uri\nimport data from a file\n\nclient.import_by_file(\"./data.rdf\", \"xml\")\n\nTriple count:  5\n\n\n100%|██████████| 5/5 [00:00&lt;00:00, 39053.11it/s]\n\n\nNumber of chunks:  1\n\n\n100%|██████████| 1/1 [00:00&lt;00:00,  1.20it/s]\n\n\nData successfully inserted.\n\n\n\n\n\ndelete data from a file\n\nclient.delete_by_file(\"./data_delete.rdf\", \"xml\")\n\nTriple count:  1\n\n\n100%|██████████| 1/1 [00:00&lt;00:00, 13706.88it/s]\n\n\nNumber of chunks:  1\n\n\n  0%|          | 0/1 [00:00&lt;?, ?it/s]\n\n\ndelete data by subjects\n\nclient.delete_by_subjects([\"http://example.org/BOB\"], verbose=True)\n\n1it [00:00,  1.09it/s]\n\n\nData for URIs successfully deleted.\n\n\n\n\n\nsearch by SPARQL query\n\nquery = \"\"\"\n    SELECT ?s ?v ?o\n    WHERE { \n      { ?s ?v ?o }\n    }\n\"\"\"\n\ndf = client.query(query)\ndf\n\n{'head': {'vars': ['s', 'v', 'o']},\n 'results': {'bindings': [{'s': {'type': 'uri',\n     'value': 'http://example.org/Alice'},\n    'v': {'type': 'uri', 'value': 'http://example.org/type'},\n    'o': {'type': 'uri', 'value': 'http://xmlns.com/foaf/0.1/Person'}},\n   {'s': {'type': 'uri', 'value': 'http://example.org/Alice'},\n    'v': {'type': 'uri', 'value': 'http://example.org/knows'},\n    'o': {'type': 'uri', 'value': 'http://example.org/BOB'}}]}}\n\n\nclear the graph\n\nclient.clear()\n\nData successfully cleared.\n\n\n\n\nWith graph uri\n\ngraph_uri = \"http://example.org/graph\"\n\nimport data from a file\n\nclient.import_by_file(\"./data.rdf\", \"xml\", graph_uri=graph_uri)\n\nTriple count:  5\n\n\n100%|██████████| 5/5 [00:00&lt;00:00, 44715.39it/s]\n\n\nNumber of chunks:  1\n\n\n100%|██████████| 1/1 [00:00&lt;00:00,  1.25it/s]\n\n\nData successfully inserted.\n\n\n\n\n\nsearch by SPARQL query\n\nquery = \"\"\"\n    SELECT ?g ?s ?v ?o\n    WHERE { \n      graph ?g { ?s ?v ?o }\n    }\n\"\"\"\n\ndf = client.query(query)\ndf\n\n{'head': {'vars': ['g', 's', 'v', 'o']},\n 'results': {'bindings': [{'g': {'type': 'uri',\n     'value': 'http://example.org/graph'},\n    's': {'type': 'uri', 'value': 'http://example.org/Alice'},\n    'v': {'type': 'uri', 'value': 'http://example.org/type'},\n    'o': {'type': 'uri', 'value': 'http://xmlns.com/foaf/0.1/Person'}},\n   {'g': {'type': 'uri', 'value': 'http://example.org/graph'},\n    's': {'type': 'uri', 'value': 'http://example.org/Alice'},\n    'v': {'type': 'uri', 'value': 'http://example.org/knows'},\n    'o': {'type': 'uri', 'value': 'http://example.org/BOB'}},\n   {'g': {'type': 'uri', 'value': 'http://example.org/graph'},\n    's': {'type': 'uri', 'value': 'http://example.org/BOB'},\n    'v': {'type': 'uri', 'value': 'http://xmlns.com/foaf/0.1/topic_interest'},\n    'o': {'type': 'uri',\n     'value': 'https://jpsearch.go.jp/entity/chname/葛飾北斎'}},\n   {'g': {'type': 'uri', 'value': 'http://example.org/graph'},\n    's': {'type': 'uri', 'value': 'http://example.org/BOB'},\n    'v': {'type': 'uri', 'value': 'http://example.org/type'},\n    'o': {'type': 'uri', 'value': 'http://xmlns.com/foaf/0.1/Person'}},\n   {'g': {'type': 'uri', 'value': 'http://example.org/graph'},\n    's': {'type': 'uri', 'value': 'http://example.org/BOB'},\n    'v': {'type': 'uri', 'value': 'http://example.org/knows'},\n    'o': {'type': 'uri', 'value': 'http://example.org/Alice'}}]}}\n\n\nclear the graph\n\nclient.clear(graph_uri=graph_uri)\n\nData successfully cleared.",
+    "crumbs": [
+      "dydra-py"
+    ]
+  }
+]
